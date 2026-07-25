@@ -1,0 +1,33 @@
+# Python Virtual Environment
+venv/
+.venv/
+env/
+
+# Python Bytecode & Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+backend/__pycache__/
+frontend/__pycache__/
+
+# Database & Runtime Configuration
+*.db
+hospital.db
+settings.json
+.env
+
+# Generated Media, PDFs & Logs
+prescriptions_pdfs/
+*.pdf
+*.log
+temp_prescription.png
+login_bg.png
+tunnel_url.txt
+prompt.md
+
+# IDE & Operating System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

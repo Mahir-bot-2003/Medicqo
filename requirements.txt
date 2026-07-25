@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+httpx
+customtkinter
+reportlab
+python-telegram-bot
+twilio
+PyMuPDF
