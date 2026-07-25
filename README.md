@@ -1,7 +1,10 @@
-# Medicqo — Hospital CRM & Digital Prescriptions
+# Medicqo - Hospital CRM & Digital Prescriptions
 
 A comprehensive, Python-based Hospital CRM and Digital Prescription generator. This system allows doctors to authenticate, manage their patient roster, instantly generate PDF prescriptions, and securely transmit them directly to patients via WhatsApp or Telegram.
 
+<div align="center">
+<img width="1748" height="2048" alt="image" src="https://github.com/user-attachments/assets/5f493444-daa6-4a71-ad89-dadc52805c21" />
+</div>
 ## Features
 
 - **Doctor Registration & Authentication**: Secure login flow allowing multiple doctors to manage their own patients.
