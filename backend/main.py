@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from typing import List
 import os
+import json
 
 from . import crud, models, schemas, pdf_gen, messaging
 from .database import engine, get_db
@@ -30,8 +31,11 @@ app = FastAPI(title="Digital Prescription System Demo API")
 def read_settings():
     return get_settings()
 
+from fastapi import Body
+
 @app.post("/settings/")
-def update_settings(settings: dict):
+def update_settings(settings: dict = Body(...)):
+    import json
     with open(SETTINGS_FILE, "w") as f:
         json.dump(settings, f)
     return {"message": "Settings saved"}

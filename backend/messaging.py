@@ -13,7 +13,7 @@ class NotificationChannel(ABC):
 
 class TelegramChannel(NotificationChannel):
     def __init__(self, bot_token: str):
-        self.bot_token = "key"
+        self.bot_token = bot_token
         # In a real scenario we'd map patient phone numbers to Telegram Chat IDs.
         # For this demo, we will use a dummy/hardcoded chat ID or just print to console.
         # Let's assume `patient_contact` for this demo is just a Telegram Chat ID for simplicity,
@@ -49,10 +49,9 @@ from twilio.rest import Client
 
 class WhatsAppTwilioChannel(NotificationChannel):
     def __init__(self, account_sid: str, auth_token: str, from_number: str):
-        # We will use placeholder credentials. The user will need to replace these with real ones.
-        self.account_sid = "your_key"
-        self.auth_token = "your_key"
-        self.from_number = "your_key"
+        self.account_sid = account_sid
+        self.auth_token = auth_token
+        self.from_number = from_number
 
     def send_prescription(self, patient_contact: str, pdf_url: str, patient_name: str) -> MessageResult:
         print(f"[WhatsApp] Sending PDF to {patient_name} at {patient_contact}")

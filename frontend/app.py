@@ -341,14 +341,39 @@ class App(ctk.CTk):
         notes_box = ctk.CTkTextbox(left_col, height=60, fg_color="#f9fafb", border_color="#e5e7eb", border_width=1)
         notes_box.pack(fill="x", padx=20, pady=5)
         
+        ctk.CTkLabel(left_col, text="Past History", font=("Helvetica", 14, "bold"), text_color=THEME_TEXT_MAIN).pack(anchor="w", padx=20, pady=(20,5))
+        history_frame = ctk.CTkScrollableFrame(left_col, fg_color="#f9fafb", border_color="#e5e7eb", border_width=1)
+        history_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        
+        try:
+            res = httpx.get(f"{API_URL}/patients/{patient['id']}/prescriptions/")
+            if res.status_code == 200:
+                past_rx = res.json()
+                if not past_rx:
+                    ctk.CTkLabel(history_frame, text="No previous history.", text_color=THEME_TEXT_MUTED).pack(pady=10)
+                else:
+                    for rx in reversed(past_rx):
+                        date_str = rx.get("created_at", "Unknown")[:10] if rx.get("created_at") else "Unknown"
+                        diag = rx.get("diagnosis", "N/A")
+                        rx_id = rx.get("id")
+                        
+                        def make_open_cmd(pid):
+                            return lambda: __import__('os').startfile(__import__('os').path.abspath(f"prescriptions_pdfs/prescription_{pid}.pdf")) if __import__('os').path.exists(f"prescriptions_pdfs/prescription_{pid}.pdf") else print("PDF not found")
+                            
+                        ctk.CTkButton(history_frame, text=f"📄 {date_str}: {diag}", 
+                                      fg_color="transparent", text_color=THEME_PRIMARY, hover_color="#e5e7eb",
+                                      anchor="w", command=make_open_cmd(rx_id)).pack(fill="x", padx=10, pady=2)
+        except Exception as e:
+            ctk.CTkLabel(history_frame, text="Could not load history.", text_color="red").pack()
+        
         # RIGHT COLUMN (Medicines)
         right_col = ctk.CTkFrame(grid_frame, fg_color=THEME_CARD, corner_radius=10)
         right_col.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
         
         ctk.CTkLabel(right_col, text="Medicines", font=("Helvetica", 14, "bold"), text_color=THEME_TEXT_MAIN).pack(anchor="w", padx=20, pady=(20, 10))
         
-        meds_frame = ctk.CTkScrollableFrame(right_col, fg_color="transparent")
-        meds_frame.pack(fill="both", expand=True, padx=10)
+        meds_frame = ctk.CTkScrollableFrame(right_col, fg_color="transparent", height=180)
+        meds_frame.pack(fill="x", padx=10)
         
         self.medicine_rows = []
         
@@ -392,6 +417,11 @@ class App(ctk.CTk):
         status_lbl = ctk.CTkLabel(actions, text="", text_color="green")
         status_lbl.pack(side="left", padx=10)
         
+        preview_scroll = ctk.CTkScrollableFrame(right_col, fg_color="transparent")
+        preview_scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        preview_lbl = ctk.CTkLabel(preview_scroll, text="PDF Preview will appear here", text_color=THEME_TEXT_MUTED)
+        preview_lbl.pack(pady=20)
+        
         def submit_with_channel(channel_str):
             meds = []
             for r in self.medicine_rows:
@@ -422,7 +452,7 @@ class App(ctk.CTk):
                         status_lbl.configure(text="Generated!", text_color="green")
                         # Give the background task 1 second to create the PDF, then open it
                         import os
-                        self.after(1000, lambda: self.show_pdf_preview(os.path.abspath(f"prescriptions_pdfs/prescription_{pid}.pdf")))
+                        self.after(1000, lambda: self.show_inline_pdf_preview(os.path.abspath(f"prescriptions_pdfs/prescription_{pid}.pdf"), preview_lbl))
                     else:
                         status_lbl.configure(text="Sent!", text_color="green")
                 else:
@@ -487,23 +517,16 @@ class App(ctk.CTk):
         ctk.CTkButton(form, text="Save Settings", width=200, height=45, fg_color=THEME_PRIMARY, command=save_settings).pack(pady=(20, 10), padx=40, anchor="w")
         status_lbl.pack(padx=40, anchor="w")
 
-    def show_pdf_preview(self, pdf_path):
+    def show_inline_pdf_preview(self, pdf_path, lbl_widget):
         try:
             doc = fitz.open(pdf_path)
             page = doc.load_page(0)
-            pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+            pix = page.get_pixmap(matrix=fitz.Matrix(0.8, 0.8)) # Scaled slightly to fit well inline
             img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
             
-            top = ctk.CTkToplevel(self)
-            top.title("Prescription Preview")
-            top.geometry("850x800")
-            
-            scroll = ctk.CTkScrollableFrame(top)
-            scroll.pack(fill="both", expand=True)
-            
             ctk_img = ctk.CTkImage(light_image=img, dark_image=img, size=(pix.width, pix.height))
-            lbl = ctk.CTkLabel(scroll, image=ctk_img, text="")
-            lbl.pack(pady=20, padx=20)
+            lbl_widget.configure(image=ctk_img, text="")
+            lbl_widget.image = ctk_img
         except Exception as e:
             print(f"Failed to load PDF preview: {e}")
 

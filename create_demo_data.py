@@ -6,7 +6,7 @@ def setup():
     try:
         # Create doctor
         res = httpx.post(f"{API_URL}/doctors/", json={
-            "name": "Dr. Nav S",
+            "name": "Nav S",
             "specialization": "General Physician",
             "phone": "555-0100",
             "password": "demo"
